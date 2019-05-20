@@ -10,6 +10,18 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <title>Debt Snowball Calculator</title>
+
+    <style>
+        .debts-list input {
+            opacity: 0.6;
+        }
+
+        .debts-list li:last-of-type input,
+        .debts-list input:focus,
+        .debts-list input:active {
+            opacity: 1;
+        }
+    </style>
 </head>
 
 <body>
@@ -48,12 +60,12 @@
                             </li>
                         </ul>
                         <div class="clearfix">
-                            <button class="btn btn-primary mt-1 float-right" onclick="addDebtItem()">Add Another</button>
+                            <button class="btn btn-primary mt-1 float-right" onclick="addDebtItem()">Add Debt</button>
                         </div>
                     </div>
                 </div>
                 <div class="card mt-3">
-                    <h5 class="card-header">Set your monthly debt budget</h5>
+                    <h5 class="card-header">How much money can you put toward these debts each month?</h5>
                     <div class="card-body">
                         <div class="set-budget-amount">
                             <div class="input-group input-group-sm">
