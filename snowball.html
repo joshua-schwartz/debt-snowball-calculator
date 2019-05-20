@@ -11,11 +11,13 @@
     <title>Debt Snowball Calculator</title>
   </head>
 <body>
-    <main class="container">
+    <main class="container mt-4">
       <div class="row">
         <div class="col-12">
           <h1>Debt Snowball Calculator</h1>
-          <p>Use this calculator to find out how long it will take you to pay off your debt and how much interest you'll pay if you prioritize debts by balance or by interest rate. Also see how much time and money you could save if you can make extra payments!</p>
+          <p>Use this calculator to find out how long it will take you to pay off your debt and how much interest you'll pay if you prioritize debts by balance or by interest rate. Try adjusting your monthly debt budget amount to see how much time and money you could save if you can make extra payments!</p>
+          <h3>How it works</h3>
+          <p>We take your debts, order them by balance and by interest rate, then simulate paying your bills each month by prioritizing one debt at a time. We set aside enough to pay the accrued interest for each debt that month, then apply whatever is left over to the prioritized debt. As debts get paid off, there is more money each month to go toward the next debt, and it gains momentum as each debt is eliminated!</p>
         </div>
       </div>
       <div class="row">
@@ -28,21 +30,23 @@
                               <div class="input-group-prepend">
                                   <span class="input-group-text" id="inputGroup-sizing-sm">Name</span>
                               </div>
-                              <input type="text" class="form-control" aria-label="" aria-describedby="" data-debt-name>
+                              <input type="text" class="form-control" placeholder="car loan" aria-label="" aria-describedby="" data-debt-name>
                           </div>
                           <div class="input-group input-group-sm mb-3">
                               <div class="input-group-prepend">
                                   <span class="input-group-text" id="inputGroup-sizing-sm">Current Balance</span>
                               </div>
-                              <input type="number" class="form-control" aria-label="" aria-describedby="" data-current-balance>
+                              <input type="number" class="form-control" placeholder="5000" aria-label="" aria-describedby="" data-current-balance>
                           </div>
                           <div class="input-group input-group-sm mb-3">
                               <div class="input-group-prepend">
-                                  <span class="input-group-text" id="inputGroup-sizing-sm">Interest Rate</span>
+                                  <span class="input-group-text" id="inputGroup-sizing-sm">Interest Rate %</span>
                               </div>
-                              <input type="number" class="form-control" placeholder="Enter in decimal form, so 13% would be 0.13" aria-label="" aria-describedby="" data-interest-rate>
+                              <input type="number" class="form-control" placeholder="13" aria-label="" aria-describedby="" data-interest-rate>
                           </div>
-                          <button class="btn btn-primary" value="+ Add" onclick="addDebtItem()" />
+                          <div class="clearfix">
+                              <button class="btn btn-primary mt-3 float-right" onclick="addDebtItem()">Add</button>
+                          </div>
                       </div>
                       <hr>
                       <ul class="debt-list"></ul>
@@ -61,24 +65,36 @@
                       </div>
                   </div>
               </div>
-              <button class="btn btn-success" value="Snowball!" onclick="runSnowball()" />
+              <div class="clearfix">
+                  <button class="btn btn-success mt-3 float-right" onclick="runSnowball()">Snowball!</button>
+              </div>
           </div>
       </div>
-      <div class="row">
+      <div class="row mt-3 mb-4" style="display: none;" data-results-card>
           <div class="col-12">
               <div class="card">
                   <h5 class="card-header">Results</h5>
                   <div class="card-body">
-                      <p>If you pay off your debts from largest balance to smallest, it will take you <span class="results-span" data-balance-months></span> months and you will pay $<span class="results-span" data-balance-cost></span> in interest.</p>
-                      <p>If you pay off your debts from highest interest rate to lowest, it will take you <span class="results-span" data-interest-months></span> months and you will pay $<span class="results-span" data-interest-cost></span> in interest.</p>
+                      <p>If you pay off your debts from smallest balance to largest:</p>
+                      <ul class="mb-4">
+                        <li>It will take <span data-balance-years></span> years and <span data-balance-months></span> months</li>
+                        <li>$<span data-balance-cost></span> paid in interest</li>
+                      </ul>
+                      <p>If you pay off your debts from highest interest to lowest:</p>
+                      <ul>
+                        <li>It will take <span data-interest-years></span> years and <span data-interest-months></span> months</li>
+                        <li>$<span data-interest-cost></span> paid in interest</li>
+                      </ul>
                   </div>
               </div>
           </div>
       </div>
     </main>
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    
     <script type="text/javascript">
           let debts = [];
 
@@ -87,17 +103,18 @@
 
             newDebt.name = $("[data-debt-name]").val();
             newDebt.balance = $("[data-current-balance]").val();
-            newDebt.interestRate = $("[data-interest-rate]").val();
+            newDebt.interestRate = Number.parseFloat($("[data-interest-rate]").val() / 100).toFixed(4);
 
             debts.push(newDebt);
 
-            $(".debt-list").append("<li>" + newDebt.name + ": $" + newDebt.balance + " at " + newDebt.interestRate * 100 + "% interest</li>");
+            $(".debt-list").append("<li>" + newDebt.name + ": $" + newDebt.balance + " at " + Number.parseFloat(newDebt.interestRate * 100).toFixed(2) + "% interest</li>");
             $("[data-debt-name], [data-current-balance], [data-interest-rate]").val("");
           }
 
           function getDebtsByBalance() {
               let debtsSortedByBalance = debts.map(i => ({ ...i}));
-              debtsSortedByBalance.sort((a, b) => a.balance - b.balance);
+              debtsSortedByBalance.reverse(debtsSortedByBalance.sort((a, b) => a.balance - b.balance));
+              console.log(...debtsSortedByBalance);
 
               return debtsSortedByBalance;
           }
@@ -146,7 +163,7 @@
               }
           }
 
-          function getSnowballResults(debtList) {
+          function getSnowballResults(debtList, debtBudget) {
               let results = {
                 monthsToDebtFree: 0,
                 totalInterestPaid: 0
@@ -155,7 +172,7 @@
 
               while(remainingTotalBalance > 0) {
                   var monthlyInterest = getMonthlyInterest(debtList);
-                  var principlePayment = monthlyDebtBudget - monthlyInterest;
+                  var principlePayment = debtBudget - monthlyInterest;
                   
                   results.monthsToDebtFree++;
                   results.totalInterestPaid += monthlyInterest;
@@ -173,15 +190,17 @@
 
               if (!debtsByBalance.length || !debtsByInterestRate.length || !monthlyDebtBudget) { return false };
 
-              let balanceResults = getSnowballResults(debtsByBalance);
-              let interestResults = getSnowballResults(debtsByInterestRate);
+              let balanceResults = getSnowballResults(debtsByBalance, monthlyDebtBudget);
+              let interestResults = getSnowballResults(debtsByInterestRate, monthlyDebtBudget);
 
-              $("[data-balance-months]").text(balanceResults.monthsToDebtFree);
-              $("[data-balance-cost]").text(balanceResults.totalInterestPaid);
-              $("[data-interest-months]").text(interestResults.monthsToDebtFree);
-              $("[data-interest-cost]").text(interestResults.totalInterestPaid);
+              $("[data-balance-years]").text(Math.floor(balanceResults.monthsToDebtFree / 12));
+              $("[data-balance-months]").text(balanceResults.monthsToDebtFree % 12);
+              $("[data-balance-cost]").text(Math.round(balanceResults.totalInterestPaid));
+              $("[data-interest-years]").text(Math.floor(interestResults.monthsToDebtFree / 12));
+              $("[data-interest-months]").text(interestResults.monthsToDebtFree % 12);
+              $("[data-interest-cost]").text(Math.round(interestResults.totalInterestPaid));
+              $("[data-results-card]").show();
           }
-
     </script>
 </body>
 </html>
