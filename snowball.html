@@ -114,7 +114,6 @@
           function getDebtsByBalance() {
               let debtsSortedByBalance = debts.map(i => ({ ...i}));
               debtsSortedByBalance.reverse(debtsSortedByBalance.sort((a, b) => a.balance - b.balance));
-              console.log(...debtsSortedByBalance);
 
               return debtsSortedByBalance;
           }
