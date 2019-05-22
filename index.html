@@ -88,15 +88,9 @@
                 <div class="card">
                     <h5 class="card-header">Results</h5>
                     <div class="card-body">
-                        <p>If you pay off your debts from smallest balance to largest:</p>
                         <ul class="mb-4">
                             <li>It will take <span data-balance-years></span> years and <span data-balance-months></span> months</li>
                             <li>$<span data-balance-cost></span> paid in interest</li>
-                        </ul>
-                        <p>If you pay off your debts from highest interest to lowest:</p>
-                        <ul>
-                            <li>It will take <span data-interest-years></span> years and <span data-interest-months></span> months</li>
-                            <li>$<span data-interest-cost></span> paid in interest</li>
                         </ul>
                     </div>
                 </div>
@@ -110,15 +104,51 @@
 
     <script type="text/javascript">
         let debts = [];
+        let totalInterestPaid = 0;
+        let monthsToDebtFree = 0;
+        let monthlyDebtBudget = 0;
 
+        // add a new debt item to the list
         function addDebtItem() {
             let $newDebt = $(".debts-list li").first().clone().hide();
+
             $newDebt.find("input").each(function () {
                 $(this).val("");
             });
+
             $newDebt.appendTo(".debts-list").fadeIn();
         }
 
+        // calculate the rate at which the debt's minimum principle will be paid each month
+        function getAnnualPrincipleRate(balance, minPayment, interestRate) {
+            let monthlyInterestPayment = ((balance * interestRate) / 12);
+            let monthlyPrinciplePayment = minPayment - monthlyInterestPayment;
+            let annualPrinciplePayment = monthlyPrinciplePayment * 12;
+            let annualPrincipleRate = annualPrinciplePayment / balance;
+
+            return Number.parseFloat(annualPrincipleRate).toFixed(4);
+        }
+
+        // scrape values from the form to populate the array with data
+        function populateDebtArray() {
+            debts = [];
+
+            monthlyDebtBudget = $("[data-debt-budget]").val();
+
+            $(".debts-list li").each(function () {
+                let newDebt = {};
+                let minPayment = $(this).find("[data-min-payment]").val();
+
+                newDebt.name = $(this).find("[data-debt-name]").val();
+                newDebt.balance = $(this).find("[data-current-balance]").val();
+                newDebt.annualInterestRate = Number.parseFloat($(this).find("[data-interest-rate]").val() / 100).toFixed(4);
+                newDebt.annualPrincipleRate = getAnnualPrincipleRate(newDebt.balance, minPayment, newDebt.annualInterestRate);
+
+                debts.push(newDebt);
+            });
+        }
+
+        // clone the original array and sort from largest balance to smallest
         function getDebtsByBalance() {
             let debtsSortedByBalance = debts.map(i => ({
                 ...i
@@ -129,62 +159,42 @@
             return debtsSortedByBalance;
         }
 
-        function getDebtsByInterestRate() {
-            let debtsSortedByInterestRate = debts.map(i => ({
-                ...i
-            }));
-
-            debtsSortedByInterestRate.sort((a, b) => a.interestRate - b.interestRate);
-
-            return debtsSortedByInterestRate;
+        // track the number of months to pay off all debts
+        function incrementMonths() {
+            monthsToDebtFree++;
         }
 
-        // function getRemainingTotalBalance(debtList) {
-        //     let totalBalance = 0;
+        // track the total interest paid until all debts are paid off
+        function incrementInterest(monthlyInterest) {
+            totalInterestPaid += monthlyInterest;
+        }
 
-        //     for (i = 0; i < debtList.length; i++) {
-        //         let debtItem = debtList[i];
-        //         totalBalance += debtItem.balance;
-        //     }
+        // display the amount of time and interest paid
+        function displaySnowballResults(monthsToDebtFree, totalInterestPaid) {
+            let years = Math.floor(monthsToDebtFree / 12);
+            let months = monthsToDebtFree % 12;
 
-        //     return totalBalance;
-        // }
-
-        function getTotalMonthlyInterest(debtList) {
-            let monthlyInterest = 0;
-
-            for (i = 0; i < debtList.length; i++) {
-                let debtItem = debtList[i];
-                monthlyInterest += ((debtItem.balance * debtItem.interestRate) / 12);
+            if (years === 1) {
+                $("[data-balance-years]").text(years + " year");
+            } else {
+                $("[data-balance-years]").text(years + " years");
             }
 
-            return monthlyInterest;
-        }
-
-        function getTotalMonthlyPrinciple(debtList) {
-            let monthlyInterest = 0;
-
-            for (i = 0; i < debtList.length; i++) {
-                let debtItem = debtList[i];
-                monthlyInterest += ((debtItem.balance * debtItem.interestRate) / 12);
+            if (months === 1) {
+                $("[data-balance-months]").text(months + " month");
+            } else {
+                $("[data-balance-months]").text(months + " months");
             }
 
-            return monthlyInterest;
+            $("[data-balance-cost]").text(Math.round(totalInterestPaid));
+            $("[data-results-card]").fadeIn();
         }
 
-        function makeMinimumPayments(debtList) {
-            for (i = 0; i < debtList.length; i++) {
-                let debtItem = debtList[i];
-                let monthlyInterest = ((debtItem.balance * debtItem.interestRate) / 12);
-                let monthlyPrinciple = ((debtItem.balance * debtItem.principleRate) / 12);
-                let monthlyMinimumPayment = monthlyPrinciple + monthlyInterest;
-
-                debtItem.balance -= monthlyMinimumPayment;
-            }
-        }
-
+        // make an extra payment to the prioritized debt with whatever is left over
+        // if a debt is fully paid off, remove it from the array and use the leftover money to pay the next debt
         function makePriorityDebtPayment(paymentAmount, debtList) {
             let currentDebtIndex = debtList.length - 1;
+
             if (!debtList.length) {
                 return false
             };
@@ -200,68 +210,41 @@
             }
         }
 
-        function getSnowballResults(debtList, debtBudget) {
-            let results = {
-                monthsToDebtFree: 0,
-                totalInterestPaid: 0
-            };
-            let remainingTotalBalance = 1;
+        function makePayments(debtList) {
+            let totalMonthlyMinimumPayments = 0;
+            let leftoverBudget = 0;
 
-            while (debtList.length) {
-                let totalMonthlyInterest = getTotalMonthlyInterest(debtList);
-                let totalMonthlyPrinciple = getTotalMonthlyPrinciple(debtList);
-                let priorityPaymentAmount = debtBudget - (totalMonthlyPrinciple + totalMonthlyInterest);
+            for (i = 0; i < debtList.length; i++) {
+                let debtItem = debtList[i];
+                let monthlyInterestPayment = ((debtItem.balance * debtItem.annualInterestRate) / 12);
+                let monthlyPrinciplePayment = ((debtItem.balance * debtItem.annualPrincipleRate) / 12);
+                let monthlyMinimumPayment = monthlyInterestPayment + monthlyPrinciplePayment;
 
-                results.monthsToDebtFree++;
-                results.totalInterestPaid += totalMonthlyInterest;
-                makeMinimumPrinciplePayments(debtList);
-                makePriorityDebtPayment(priorityPaymentAmount, debtList);
-                // remainingTotalBalance = getRemainingTotalBalance(debtList);
+                totalMonthlyMinimumPayments += monthlyMinimumPayment;
+                incrementTotalInterest(monthlyInterest);
+                debtItem.balance -= monthlyPrinciplePayment;
             }
 
-            return results;
-        }
+            leftoverBudget = monthlyDebtBudget - totalMonthlyMinimumPayments;
 
-        function populateDebtArray() {
-            debts = [];
-
-            $(".debts-list li").each(function () {
-                let newDebt = {};
-
-                newDebt.name = $(this).find("[data-debt-name]").val();
-                newDebt.balance = $(this).find("[data-current-balance]").val();
-                newDebt.interestRate = Number.parseFloat($(this).find("[data-interest-rate]").val() / 100).toFixed(4);
-                newDebt.principleRate = Number.parseFloat(($(this).find("[data-min-payment]").val() - ((newDebt.balance * newDebt.interestRate) / 12)) / newDebt.balance).toFixed(4);
-
-                debts.push(newDebt);
-            });
-        }
-
-        function displaySnowballResults(balanceResults, interestResults) {
-            $("[data-balance-years]").text(Math.floor(balanceResults.monthsToDebtFree / 12));
-            $("[data-balance-months]").text(balanceResults.monthsToDebtFree % 12);
-            $("[data-balance-cost]").text(Math.round(balanceResults.totalInterestPaid));
-            $("[data-interest-years]").text(Math.floor(interestResults.monthsToDebtFree / 12));
-            $("[data-interest-months]").text(interestResults.monthsToDebtFree % 12);
-            $("[data-interest-cost]").text(Math.round(interestResults.totalInterestPaid));
-            $("[data-results-card]").fadeIn();
+            makePriorityDebtPayment(leftoverBudget, debtList);
         }
 
         function runSnowball() {
             populateDebtArray();
-
             let debtsByBalance = getDebtsByBalance();
-            let debtsByInterestRate = getDebtsByInterestRate();
-            let monthlyDebtBudget = $("[data-debt-budget]").val();
 
-            if (!debtsByBalance.length || !debtsByInterestRate.length || !monthlyDebtBudget) {
+            if (!debtsByBalance.length || !monthlyDebtBudget) {
                 return false
             };
 
-            let balanceResults = getSnowballResults(debtsByBalance, monthlyDebtBudget);
-            let interestResults = getSnowballResults(debtsByInterestRate, monthlyDebtBudget);
+            // run loop for each month
+            while (debtsByBalance.length) {
+                incrementMonths();
+                makePayments(debtsByBalance);
+            }
 
-            displaySnowballResults(balanceResults, interestResults);
+            displaySnowballResults(monthsToDebtFree, totalInterestPaid);
         }
     </script>
 </body>
