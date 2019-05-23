@@ -89,7 +89,7 @@
                     <h5 class="card-header">Results</h5>
                     <div class="card-body">
                         <ul class="mb-4">
-                            <li>It will take <span data-balance-years></span> years and <span data-balance-months></span> months</li>
+                            <li>It will take <span data-balance-years></span> and <span data-balance-months></span></li>
                             <li>$<span data-balance-cost></span> paid in interest</li>
                         </ul>
                     </div>
@@ -231,6 +231,11 @@
         }
 
         function runSnowball() {
+            debts = [];
+            totalInterestPaid = 0;
+            monthsToDebtFree = 0;
+            monthlyDebtBudget = 0;
+
             populateDebtArray();
             let debtsByBalance = getDebtsByBalance();
 
