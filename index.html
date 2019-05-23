@@ -12,6 +12,10 @@
     <title>Debt Snowball Calculator</title>
 
     <style>
+        .debts-list {
+            padding-inline-start: 0;
+        }
+
         .debts-list input {
             opacity: 0.6;
         }
@@ -25,20 +29,21 @@
 </head>
 
 <body>
-    <header>
-        <h1>Debt Snowball Calculator</h1>
-    </header>
     <main class="container mt-4">
+        <div class="row">
+            <header class="col-12">
+                <h1>Debt Snowball Calculator</h1>
+            </header>
+        </div>
         <div class="row">
             <div class="col-12">
                 <p>Use this calculator to find out how long it will take you to pay off your debt and how much interest
-                    you'll pay if you prioritize debts by balance or by interest rate. Try adjusting your monthly debt
-                    budget amount to see how much time and money you could save if you can make extra payments!</p>
-                <p>We take your debts, order them by balance and by interest rate, then simulate paying your bills each
-                    month by prioritizing one debt at a time. We set aside enough to pay the accrued interest for each
+                    you'll pay using a Debt Snowball method. We take your debts, order them by balance, then simulate paying your bills each
+                    month by prioritizing one debt at a time. We set aside enough to pay the minimum for each
                     debt that month, then apply whatever is left over to the prioritized debt. As debts get paid off,
                     there is more money each month to go toward the next debt, and it gains momentum as each debt is
-                    eliminated!</p>
+                    eliminated! Try adjusting your debt budget amount to see how much time and money you could save if you can make extra payments!
+                </p>
             </div>
         </div>
         <div class="row">
@@ -52,7 +57,7 @@
                             <b class="col-3">Interest Rate</b>
                             <b class="col-3">Min. Monthly Payment</b>
                         </div>
-                        <ul class="row debts-list" style="padding-inline-start:0;">
+                        <ul class="row debts-list">
                             <li class="input-group input-group-sm pl-2 pr-2 mt-1">
                                 <input type="text" class="col-3 mr-1 form-control" aria-label="" aria-describedby="" data-debt-name>
                                 <input type="number" class="col-3 mr-1 form-control" aria-label="" aria-describedby="" data-current-balance>
