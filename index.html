@@ -221,7 +221,7 @@
                 let monthlyMinimumPayment = monthlyInterestPayment + monthlyPrinciplePayment;
 
                 totalMonthlyMinimumPayments += monthlyMinimumPayment;
-                incrementTotalInterest(monthlyInterest);
+                incrementInterest(monthlyInterest);
                 debtItem.balance -= monthlyPrinciplePayment;
             }
 
