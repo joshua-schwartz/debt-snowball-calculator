@@ -135,9 +135,8 @@
         }
 
         // scrape values from the form to populate the array with data
-        function populateDebtArray() {
+        function populateDebtsArray() {
             debts = [];
-
             monthlyDebtBudget = $("[data-debt-budget]").val();
 
             $(".debts-list li").each(function () {
@@ -162,16 +161,6 @@
             debtsSortedByBalance.reverse(debtsSortedByBalance.sort((a, b) => a.balance - b.balance));
 
             return debtsSortedByBalance;
-        }
-
-        // track the number of months to pay off all debts
-        function incrementMonths() {
-            monthsToDebtFree++;
-        }
-
-        // track the total interest paid until all debts are paid off
-        function incrementInterest(monthlyInterest) {
-            totalInterestPaid += monthlyInterest;
         }
 
         // display the amount of time and interest paid
@@ -203,7 +192,7 @@
             if (!debtList.length) {
                 return false
             };
-
+            console.log(paymentAmount);
             let prioritizedDebtItem = debtList[currentDebtIndex];
 
             if (prioritizedDebtItem.balance > paymentAmount) {
@@ -226,7 +215,7 @@
                 let monthlyMinimumPayment = monthlyInterestPayment + monthlyPrinciplePayment;
 
                 totalMonthlyMinimumPayments += monthlyMinimumPayment;
-                incrementInterest(monthlyInterestPayment);
+                totalInterestPaid += monthlyInterestPayment;
                 debtItem.balance -= monthlyPrinciplePayment;
             }
 
@@ -236,12 +225,17 @@
         }
 
         function runSnowball() {
-            debts = [];
             totalInterestPaid = 0;
             monthsToDebtFree = 0;
             monthlyDebtBudget = 0;
 
-            populateDebtArray();
+            populateDebtsArray();
+
+            if (monthlyDebtBudget === 0) {
+                window.alert("Please enter a Debt Budget amount");
+                return false;
+            }
+
             let debtsByBalance = getDebtsByBalance();
 
             if (!debtsByBalance.length || !monthlyDebtBudget) {
@@ -250,7 +244,7 @@
 
             // run loop for each month
             while (debtsByBalance.length) {
-                incrementMonths();
+                monthsToDebtFree++;
                 makePayments(debtsByBalance);
             }
 
